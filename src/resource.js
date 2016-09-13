@@ -7,7 +7,7 @@ var res = {
   background_png: "res/background.png",
 //  touchorigin_png: "res/touchorigin.png",
 //  touchend_png: "res/touchend.png"
-  cat_png: "res/cat0.png"
+  cat_png: "res/cat01.png"
 };
 
 var g_resources = [];
