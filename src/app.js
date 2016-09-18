@@ -5,6 +5,9 @@ var xSpeed = 0; //カートの移動速度
 var touchOrigin; //タッチ開始したときに表示するスプライト
 var touching = false; //タッチしているかFlag
 var touchEnd; //タッチが終了したときに表示するスプライト
+var time;
+var score = 0;
+var muki;
 
 var gameScene = cc.Scene.extend({
   onEnter: function() {
@@ -33,13 +36,23 @@ var game = cc.Layer.extend({
     itemsLayer = cc.Layer.create();
     this.addChild(itemsLayer);
 
+    //文字
+    var label01 = cc.LabelTTF.create("スコア"+ score, "Arial", 20);
+    this.addChild(label01); //文字つける時はこっち*/
+    label01.setPosition(80, 35);
+
     //ネコを操作するレイヤー
     topLayer = cc.Layer.create();
     this.addChild(topLayer);
     cart = cc.Sprite.create(res.cat_png);
-    topLayer.addChild(cart, 0);
+    topLayer.addChild(cart, 2);
     cart.setPosition(240, 40);
     this.schedule(this.addItem, 1);
+
+    //カゴ
+    kago = cc.Sprite.create(res.basket0_png);
+    cart.addChild(kago, -1);
+    kago.setPosition(60, 60);
 
     //ネコのかごを操作するレイヤー
     /*kagoLayer = cc.Layer.create();
@@ -48,7 +61,7 @@ var game = cc.Layer.extend({
     kagoLayer.addChild(cart, 0);
     cart.setPosition(240, 40);
     this.schedule(this.addItem, 1);*/
-    
+
     //タッチイベントのリスナー追加
     cc.eventManager.addListener(touchListener, this);
     //カートの移動のため　Update関数を1/60秒ごと実行させる　
@@ -63,6 +76,7 @@ var game = cc.Layer.extend({
   },
   //カートの移動のため　Update関数を1/60秒ごと実行させる関数
   update: function(dt) {
+
     if (touching) {
     //touchEnd(ドラックしている位置）とタッチ開始位置の差を計算する
     //そのままだと値が大きすぎるので50で割る
@@ -70,9 +84,15 @@ var game = cc.Layer.extend({
     //動く丸-タッチした丸/制限
       if (xSpeed > 0) {
         cart.setFlippedX(true);
+        kago.setFlippedX(true);
+        kago.setPosition(0, 60);
+        muki = 1;
       }
       if (xSpeed < 0) {
         cart.setFlippedX(false);
+        kago.setFlippedX(false);
+        kago.setPosition(60, 60);
+        muki = 0;
       }
       cart.setPosition(cart.getPosition().x + xSpeed, cart.getPosition().y);
     }
@@ -104,16 +124,27 @@ var Item = cc.Sprite.extend({
   },
   update: function(dt) {
     //果物の処理　座標をチェックしてカートの接近したら
-    if (this.getPosition().y < 35 && this.getPosition().y > 30 &&
-      Math.abs(this.getPosition().x - cart.getPosition().x) < 10 && !this.isBomb) {
-      gameLayer.removeItem(this);
-      console.log("FRUIT");
+    if(muki == 1){
+      if (this.getPosition().y < 65 && this.getPosition().y > 60 &&
+        Math.abs(this.getPosition().x - (cart.getPosition().x - 30)) < 30 && !this.isBomb) {
+          gameLayer.removeItem(this);
+          console.log("FRUIT");
+        }
+      }
+    else if(muki == 0){
+      if (this.getPosition().y < 65 && this.getPosition().y > 60 &&
+        Math.abs(this.getPosition().x - (cart.getPosition().x + 30)) < 30 && !this.isBomb) {
+          gameLayer.removeItem(this);
+          console.log("FRUIT");
+        }
     }
     //爆弾の処理　座標をチェックしてカートの接近したら　フルーツより爆弾に当たりやすくしている
-    if (this.getPosition().y < 35 && Math.abs(this.getPosition().x - cart.getPosition().x) < 25 &&
+    if (this.getPosition().y < 60 && Math.abs(this.getPosition().x - cart.getPosition().x) < 25 &&
       this.isBomb) {
       gameLayer.removeItem(this);
       console.log("BOMB");
+      score -=10;
+      label01.setString("スコア"+ score);
     }
     //地面に落ちたアイテムは消去
     if (this.getPosition().y < -30) {
