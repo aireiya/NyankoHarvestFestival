@@ -5,9 +5,14 @@ var xSpeed = 0; //カートの移動速度
 var touchOrigin; //タッチ開始したときに表示するスプライト
 var touching = false; //タッチしているかFlag
 var touchEnd; //タッチが終了したときに表示するスプライト
-var time;
+var time = 60;
 var score = 0;
+var label01
 var muki;
+var nekoval;
+var musinekopos;
+var nekox = 0;
+var wark = 0;
 
 var gameScene = cc.Scene.extend({
   onEnter: function() {
@@ -37,7 +42,7 @@ var game = cc.Layer.extend({
     this.addChild(itemsLayer);
 
     //文字
-    var label01 = cc.LabelTTF.create("スコア"+ score, "Arial", 20);
+    label01 = cc.LabelTTF.create("スコア"+ score, "Arial", 20);
     this.addChild(label01); //文字つける時はこっち*/
     label01.setPosition(80, 35);
 
@@ -50,7 +55,7 @@ var game = cc.Layer.extend({
     this.schedule(this.addItem, 1);
 
     //カゴ
-    kago = cc.Sprite.create(res.basket0_png);
+    kago = cc.Sprite.create(res.basket1_png);
     cart.addChild(kago, -1);
     kago.setPosition(60, 60);
 
@@ -95,6 +100,19 @@ var game = cc.Layer.extend({
         muki = 0;
       }
       cart.setPosition(cart.getPosition().x + xSpeed, cart.getPosition().y);
+      wark += 1;
+      if(wark == 10 || wark == 30){
+        cart.setTexture(res.cat02_png);
+      }
+      if(wark == 20){
+        cart.setTexture(res.cat03_png);
+
+      }
+      if(wark == 40){
+        cart.setTexture(res.cat_png);
+        wark = 0;
+        console.log("cat80");
+      }
     }
   }
 
@@ -129,6 +147,8 @@ var Item = cc.Sprite.extend({
         Math.abs(this.getPosition().x - (cart.getPosition().x - 30)) < 30 && !this.isBomb) {
           gameLayer.removeItem(this);
           console.log("FRUIT");
+          score += 20;
+          label01.setString("スコア"+ score);
         }
       }
     else if(muki == 0){
@@ -136,6 +156,8 @@ var Item = cc.Sprite.extend({
         Math.abs(this.getPosition().x - (cart.getPosition().x + 30)) < 30 && !this.isBomb) {
           gameLayer.removeItem(this);
           console.log("FRUIT");
+          score += 20;
+          label01.setString("スコア"+ score);
         }
     }
     //爆弾の処理　座標をチェックしてカートの接近したら　フルーツより爆弾に当たりやすくしている
@@ -145,6 +167,38 @@ var Item = cc.Sprite.extend({
       console.log("BOMB");
       score -=10;
       label01.setString("スコア"+ score);
+      //↓■■ねこびっくりけむし
+      cart.setTexture(res.musicat_png);
+      /*musinekopos = cart.getPosition().x;
+
+      var count = 0;
+
+while(count < 4){
+  nekoval = setInterval(function(){
+          cart.setPosition(musinekopos + 20, 40);
+          nekox = 1;
+          console.log("いんたーばる０１");
+          clearInterval(nekoval);　//idをclearIntervalで指定している
+　　}, 200);
+
+  nekoval = setInterval(function(){
+      cart.setPosition(musinekopos + 20, 40);
+      console.log("いんたーばる０2");
+      clearInterval(nekoval);　//idをclearIntervalで指定している
+　　  }, 200);
+count++;
+}
+    cart.setTexture(res.cat_png);*/
+
+    }
+    if(score > 100 && score < 200){
+      kago.setTexture(res.basket2_png);
+    }
+    if(score > 200 && score < 300){
+      kago.setTexture(res.basket3_png);
+    }
+    if(score > 300 && score < 400){
+      kago.setTexture(res.basket4_png);
     }
     //地面に落ちたアイテムは消去
     if (this.getPosition().y < -30) {
