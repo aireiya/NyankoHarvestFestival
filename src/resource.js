@@ -21,6 +21,11 @@ var res = {
   hint01_png: "res/cat/howtoplay1_J.png",
   hint02_png: "res/cat/howtoplay2_J.png",
   hint03_png: "res/cat/howtoplay3_J.png",
+  title_png: "res/title.png",
+  help01_png: "res/cat/help_1.png",
+  help02_png: "res/cat/help_2.png",
+  scorebg_png: "res/cat/game_counter.png",
+  kumo_png: "res/cat/game_cloud.png",
 
 
 };

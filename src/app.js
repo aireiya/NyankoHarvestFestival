@@ -7,12 +7,15 @@ var touching = false; //タッチしているかFlag
 var touchEnd; //タッチが終了したときに表示するスプライト
 var time = 60;
 var score = 0;
-var label01
+var label01;
+var label02;
 var muki;
 var nekoval;
 var musinekopos;
 var nekox = 0;
 var wark = 0;
+var hiscore = 0;
+var timeX = 0;
 
 var gameScene = cc.Scene.extend({
   onEnter: function() {
@@ -41,10 +44,7 @@ var game = cc.Layer.extend({
     itemsLayer = cc.Layer.create();
     this.addChild(itemsLayer);
 
-    //文字
-    label01 = cc.LabelTTF.create("スコア"+ score, "Arial", 20);
-    this.addChild(label01); //文字つける時はこっち*/
-    label01.setPosition(80, 35);
+
 
     //ネコを操作するレイヤー
     topLayer = cc.Layer.create();
@@ -59,18 +59,28 @@ var game = cc.Layer.extend({
     cart.addChild(kago, -1);
     kago.setPosition(60, 60);
 
-    //ネコのかごを操作するレイヤー
-    /*kagoLayer = cc.Layer.create();
-    this.addChild(kagoLayer);
-    cart = cc.Sprite.create(res.basket1_png);
-    kagoLayer.addChild(cart, 0);
-    cart.setPosition(240, 40);
-    this.schedule(this.addItem, 1);*/
+    scorebg = cc.Sprite.create(res.scorebg_png);
+    topLayer.addChild(scorebg, 3);
+    scorebg.setPosition(415, 25);
+
+    //文字
+    label01 = cc.LabelTTF.create("0", "Arial", 40);
+    label01.setColor(0,0,0);
+    this.addChild(label01); //文字つける時はこっち*/
+    label01.setPosition(460, 20);
+
+    label02 = cc.LabelTTF.create(time , "Arial", 70);
+    label02.setColor(0,0,0);
+    this.addChild(label02); //文字つける時はこっち*/
+    label02.setPosition(50, 270);
 
     //タッチイベントのリスナー追加
     cc.eventManager.addListener(touchListener, this);
     //カートの移動のため　Update関数を1/60秒ごと実行させる　
     this.scheduleUpdate();
+
+    //小惑星の生成で追加
+    this.schedule(this.addAsteroid, 5.0);
   },
   addItem: function() {
     var item = new Item();
@@ -111,10 +121,30 @@ var game = cc.Layer.extend({
       if(wark == 40){
         cart.setTexture(res.cat_png);
         wark = 0;
-        console.log("cat80");
       }
     }
-  }
+    //制限時間
+    timeX++;
+
+    if(timeX == 60){
+      time--;
+      timeX = 0;
+      label02.setString(time);
+    }
+    if(time == 0){
+      cc.director.runScene(new GameStartScene()); //リザルトへ
+    }
+
+  },
+  //小惑星の生成で追加
+addAsteroid: function(event) {
+  var asteroid = new Asteroid();
+  this.addChild(asteroid);
+},
+removeAsteroid: function(asteroid) {
+  this.removeChild(asteroid);
+},
+
 
 });
 
@@ -136,28 +166,28 @@ var Item = cc.Sprite.extend({
     //ランダムな位置に
     this.setPosition(Math.random() * 400 + 40, 350);
     //ランダムな座標に移動させる
-    var moveAction = cc.MoveTo.create(8, new cc.Point(Math.random() * 400 + 40, -50));
+    var moveAction = cc.MoveTo.create(5, new cc.Point(Math.random() * 400 + 40, -50));
     this.runAction(moveAction);
     this.scheduleUpdate();
   },
   update: function(dt) {
     //果物の処理　座標をチェックしてカートの接近したら
     if(muki == 1){
-      if (this.getPosition().y < 65 && this.getPosition().y > 60 &&
+      if (this.getPosition().y < 70 && this.getPosition().y > 60 &&
         Math.abs(this.getPosition().x - (cart.getPosition().x - 30)) < 30 && !this.isBomb) {
           gameLayer.removeItem(this);
           console.log("FRUIT");
-          score += 20;
-          label01.setString("スコア"+ score);
+          score += 1;
+          label01.setString(score);
         }
       }
     else if(muki == 0){
-      if (this.getPosition().y < 65 && this.getPosition().y > 60 &&
+      if (this.getPosition().y < 70 && this.getPosition().y > 60 &&
         Math.abs(this.getPosition().x - (cart.getPosition().x + 30)) < 30 && !this.isBomb) {
           gameLayer.removeItem(this);
           console.log("FRUIT");
-          score += 20;
-          label01.setString("スコア"+ score);
+          score += 1;
+          label01.setString(score);
         }
     }
     //爆弾の処理　座標をチェックしてカートの接近したら　フルーツより爆弾に当たりやすくしている
@@ -166,7 +196,7 @@ var Item = cc.Sprite.extend({
       gameLayer.removeItem(this);
       console.log("BOMB");
       score -=10;
-      label01.setString("スコア"+ score);
+      label01.setString(score);
       //↓■■ねこびっくりけむし
       cart.setTexture(res.musicat_png);
       /*musinekopos = cart.getPosition().x;
@@ -234,4 +264,25 @@ var touchListener = cc.EventListener.create({
     topLayer.removeChild(touchOrigin);
     topLayer.removeChild(touchEnd);
   }
-})
+});
+
+//小惑星クラス
+var Asteroid = cc.Sprite.extend({
+  ctor: function() {
+    this._super();
+    this.initWithFile(res.kumo_png);
+  },
+  onEnter: function() {
+    this._super();
+    this.setPosition(600, Math.random() * 100 + 200);
+    var moveAction = cc.MoveTo.create(10, new cc.Point(-100, Math.random() * 100 + 200 ));
+    this.runAction(moveAction);
+    this.scheduleUpdate();
+  },
+  update: function(dt) {
+		//画面の外にでた小惑星を消去する処理
+    if (this.getPosition().x < -50) {
+      gameLayer.removeAsteroid(this);
+    }
+  }
+});

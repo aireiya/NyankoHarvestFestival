@@ -42,7 +42,16 @@ var gamehint = cc.Layer.extend({
           this.addChild(drop01);
 
           console.log("if院");*/
-          drop01.setTexture(res.hint02_png);
+          if(i == 1){
+            drop01.setTexture(res.hint02_png);
+          }
+          if(i == 2){
+            drop01.setTexture(res.hint03_png);
+          }
+          if(i == 3){
+            i = 0;
+            cc.director.runScene(new GameStartScene());
+          }
       //}
 
         //cc.director.runScene(new GameStartScene());
