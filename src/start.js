@@ -2,6 +2,15 @@
 var gamestart = cc.Layer.extend({
     ctor: function() {
         this._super();
+
+        //音楽再生エンジン
+        audioEngine = cc.audioEngine;
+        //bgm再生
+        if (!audioEngine.isMusicPlaying()) {
+          //audioEngine.playMusic("res/bgm_main.mp3", true);
+          audioEngine.playMusic(res.title_bgm, true);
+        }
+
         var size = cc.director.getWinSize();
 
         var background = new cc.Sprite(res.background_png);

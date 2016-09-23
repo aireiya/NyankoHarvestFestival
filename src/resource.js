@@ -26,7 +26,15 @@ var res = {
   help02_png: "res/cat/help_2.png",
   scorebg_png: "res/cat/game_counter.png",
   kumo_png: "res/cat/game_cloud.png",
-
+  main_bgm: "res/bgm/main_bgm.mp3",
+  title_bgm: "res/bgm/title_bgm.mp3",
+  ringo_se: "res/se/ringo_se.mp3",
+  kemusi_se: "res/se/kemusi_se.mp3",
+  risalt_se: "res/se/risalt_se.mp3",
+  count03_png: "res/cat/number3.png",
+  count02_png: "res/cat/number2.png",
+  count01_png: "res/cat/number1.png",
+  go_png: "res/cat/go.png",
 
 };
 

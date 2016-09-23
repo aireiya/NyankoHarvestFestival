@@ -16,6 +16,8 @@ var nekox = 0;
 var wark = 0;
 var hiscore = 0;
 var timeX = 0;
+var timeY = 0;
+var countdown = 4;
 
 var gameScene = cc.Scene.extend({
   onEnter: function() {
@@ -39,6 +41,19 @@ var game = cc.Layer.extend({
     var backgroundLayer = cc.Layer.create();
     backgroundLayer.addChild(background);
     this.addChild(backgroundLayer);
+
+    audioEngine.stopMusic();
+    //音楽再生エンジン
+    audioEngine = cc.audioEngine;
+    //bgm再生
+    if (!audioEngine.isMusicPlaying()) {
+      //audioEngine.playMusic("res/bgm_main.mp3", true);
+      audioEngine.playMusic(res.main_bgm, true);
+    }
+
+    countdown01 = cc.Sprite.create(res.count03_png);　
+    countdown01.setPosition(250,200);　
+    this.addChild(countdown01);
 
     //アイテムがおちてくるレイヤー
     itemsLayer = cc.Layer.create();
@@ -82,9 +97,14 @@ var game = cc.Layer.extend({
     //小惑星の生成で追加
     this.schedule(this.addAsteroid, 5.0);
   },
+
   addItem: function() {
     var item = new Item();
+
+      //カウントダウン終わったら発動
+      if(countdown < 1){
     itemsLayer.addChild(item, 1);
+  }
   },
   removeItem: function(item) {
     itemsLayer.removeChild(item);
@@ -123,6 +143,26 @@ var game = cc.Layer.extend({
         wark = 0;
       }
     }
+    //カウントダウン処理
+    if(countdown > -1 ){
+    timeY++;
+    console.log("みょーん");
+      if(timeY == 70){
+        console.log(countdown);
+        timeY = 0;
+        countdown--;
+          if(countdown == 3) countdown01.setTexture(res.count02_png);
+          if(countdown == 2) countdown01.setTexture(res.count01_png);
+          if(countdown == 1) countdown01.setTexture(res.go_png);
+
+      }
+    }
+
+
+    if(countdown < 0){
+      //カウントダウン画像消す
+      countdown01.setVisible(false);
+      
     //制限時間
     timeX++;
 
@@ -134,6 +174,7 @@ var game = cc.Layer.extend({
     if(time == 0){
       cc.director.runScene(new GameStartScene()); //リザルトへ
     }
+  }
 
   },
   //小惑星の生成で追加
@@ -144,8 +185,6 @@ addAsteroid: function(event) {
 removeAsteroid: function(asteroid) {
   this.removeChild(asteroid);
 },
-
-
 });
 
 var Item = cc.Sprite.extend({
@@ -179,6 +218,7 @@ var Item = cc.Sprite.extend({
           console.log("FRUIT");
           score += 1;
           label01.setString(score);
+          audioEngine.playEffect(res.ringo_se);
         }
       }
     else if(muki == 0){
@@ -188,6 +228,7 @@ var Item = cc.Sprite.extend({
           console.log("FRUIT");
           score += 1;
           label01.setString(score);
+          audioEngine.playEffect(res.ringo_se);
         }
     }
     //爆弾の処理　座標をチェックしてカートの接近したら　フルーツより爆弾に当たりやすくしている
@@ -197,8 +238,10 @@ var Item = cc.Sprite.extend({
       console.log("BOMB");
       score -=10;
       label01.setString(score);
+      audioEngine.playEffect(res.kemusi_se);
       //↓■■ねこびっくりけむし
       cart.setTexture(res.musicat_png);
+
       /*musinekopos = cart.getPosition().x;
 
       var count = 0;
