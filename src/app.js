@@ -6,9 +6,13 @@ var touchOrigin; //タッチ開始したときに表示するスプライト
 var touching = false; //タッチしているかFlag
 var touchEnd; //タッチが終了したときに表示するスプライト
 var time = 60;
-var score = 0;
+var score01 = 0;
+var score02 = 0;
+var score03 = 0;
 var label01;
 var label02;
+var label03;
+var label04;
 var muki;
 var nekoval;
 var musinekopos;
@@ -18,6 +22,8 @@ var hiscore = 0;
 var timeX = 0;
 var timeY = 0;
 var countdown = 4;
+var invulnerability = 0; //無敵モード時間　初期値0
+var nekokemusi = 0;
 
 var gameScene = cc.Scene.extend({
   onEnter: function() {
@@ -41,6 +47,12 @@ var game = cc.Layer.extend({
     var backgroundLayer = cc.Layer.create();
     backgroundLayer.addChild(background);
     this.addChild(backgroundLayer);
+
+    //制限時間背景
+    var kouyou = cc.Sprite.create(res.kouyou_png);　
+    kouyou.setScale(0.1);
+    kouyou.setPosition(50,270);　
+    this.addChild(kouyou);
 
     audioEngine.stopMusic();
     //音楽再生エンジン
@@ -68,6 +80,8 @@ var game = cc.Layer.extend({
     topLayer.addChild(cart, 2);
     cart.setPosition(240, 40);
     this.schedule(this.addItem, 1);
+    this.setOpacity(255);
+
 
     //カゴ
     kago = cc.Sprite.create(res.basket1_png);
@@ -78,16 +92,30 @@ var game = cc.Layer.extend({
     topLayer.addChild(scorebg, 3);
     scorebg.setPosition(415, 25);
 
-    //文字
-    label01 = cc.LabelTTF.create("0", "Arial", 40);
-    label01.setColor(0,0,0);
+    //スコア1桁
+    label01 = cc.LabelTTF.create("0", "Arial", 30);
+    label01.setColor(255,255,255);
     this.addChild(label01); //文字つける時はこっち*/
-    label01.setPosition(460, 20);
+    label01.setPosition(460, 15);
 
-    label02 = cc.LabelTTF.create(time , "Arial", 70);
-    label02.setColor(0,0,0);
+    //スコア2桁
+    label02 = cc.LabelTTF.create("0", "Arial", 30);
+    label02.setColor(255,255,255);
     this.addChild(label02); //文字つける時はこっち*/
-    label02.setPosition(50, 270);
+    label02.setPosition(430, 15);
+
+    //スコア3桁
+    label03 = cc.LabelTTF.create("0", "Arial", 30);
+    label03.setColor(255,255,255);
+    this.addChild(label03); //文字つける時はこっち*/
+    label03.setPosition(400, 15);
+
+
+
+    label04 = cc.LabelTTF.create(time , "Arial", 50);
+    label04.setColor(255,255,255);
+    this.addChild(label04); //文字つける時はこっち*/
+    label04.setPosition(50, 270);
 
     //タッチイベントのリスナー追加
     cc.eventManager.addListener(touchListener, this);
@@ -146,9 +174,9 @@ var game = cc.Layer.extend({
     //カウントダウン処理
     if(countdown > -1 ){
     timeY++;
-    console.log("みょーん");
+    //console.log("みょーん");
       if(timeY == 70){
-        console.log(countdown);
+        //console.log(countdown);
         timeY = 0;
         countdown--;
           if(countdown == 3) countdown01.setTexture(res.count02_png);
@@ -162,17 +190,17 @@ var game = cc.Layer.extend({
     if(countdown < 0){
       //カウントダウン画像消す
       countdown01.setVisible(false);
-      
+
     //制限時間
     timeX++;
 
     if(timeX == 60){
       time--;
       timeX = 0;
-      label02.setString(time);
+      label04.setString(time);
     }
     if(time == 0){
-      cc.director.runScene(new GameStartScene()); //リザルトへ
+      cc.director.runScene(new GameClearScene()); //リザルトへ
     }
   }
 
@@ -191,7 +219,7 @@ var Item = cc.Sprite.extend({
   ctor: function() {
     this._super();
     //ランダムに爆弾と果物を生成する
-    if (Math.random() < 0.5) {
+    if (Math.random() < 0.4) {
       this.initWithFile(res.bug_png);
       this.isBomb = true;
     } else {
@@ -210,37 +238,68 @@ var Item = cc.Sprite.extend({
     this.scheduleUpdate();
   },
   update: function(dt) {
+
+    //console.log(invulnerability);
+
+    //無敵モード中の視覚効果
+    if (invulnerability > 0) {
+      invulnerability--;
+      cart.setOpacity(150);
+    }
+    else cart.setOpacity(255);
+
+    //毛虫触ったときの画像チェンジ
+    if (nekokemusi > 0) {
+      nekokemusi--;
+      cart.setTexture(res.musicat_png);
+    }
+
+    //スコア処理
+
+    if(score01 > 9) {
+      score02++;
+      score01 = 0;
+
+    }
+    label01.setString(score01);
+    label02.setString(score02);
+
     //果物の処理　座標をチェックしてカートの接近したら
     if(muki == 1){
       if (this.getPosition().y < 70 && this.getPosition().y > 60 &&
-        Math.abs(this.getPosition().x - (cart.getPosition().x - 30)) < 30 && !this.isBomb) {
+        Math.abs(this.getPosition().x - (cart.getPosition().x - 30)) < 30 && !this.isBomb && invulnerability == 0) {
           gameLayer.removeItem(this);
           console.log("FRUIT");
-          score += 1;
-          label01.setString(score);
+          score01 += 1;
           audioEngine.playEffect(res.ringo_se);
         }
       }
     else if(muki == 0){
       if (this.getPosition().y < 70 && this.getPosition().y > 60 &&
-        Math.abs(this.getPosition().x - (cart.getPosition().x + 30)) < 30 && !this.isBomb) {
+        Math.abs(this.getPosition().x - (cart.getPosition().x + 30)) < 30 && !this.isBomb && invulnerability == 0) {
           gameLayer.removeItem(this);
           console.log("FRUIT");
-          score += 1;
-          label01.setString(score);
+          score01 += 1;
           audioEngine.playEffect(res.ringo_se);
         }
     }
     //爆弾の処理　座標をチェックしてカートの接近したら　フルーツより爆弾に当たりやすくしている
-    if (this.getPosition().y < 60 && Math.abs(this.getPosition().x - cart.getPosition().x) < 25 &&
-      this.isBomb) {
+    if (this.getPosition().y < 60 && this.getPosition().y > 10 && Math.abs(this.getPosition().x - cart.getPosition().x) < 25 &&
+      this.isBomb && invulnerability == 0) {
       gameLayer.removeItem(this);
       console.log("BOMB");
-      score -=10;
-      label01.setString(score);
+        if(score02 > 0) score02--;
+          else score01 -= 9;
+
+        if(score01 < 0) score01 = 0;
       audioEngine.playEffect(res.kemusi_se);
       //↓■■ねこびっくりけむし
-      cart.setTexture(res.musicat_png);
+
+
+
+      invulnerability = 500;
+      nekokemusi = 500;
+
 
       /*musinekopos = cart.getPosition().x;
 
@@ -264,15 +323,11 @@ count++;
     cart.setTexture(res.cat_png);*/
 
     }
-    if(score > 100 && score < 200){
-      kago.setTexture(res.basket2_png);
-    }
-    if(score > 200 && score < 300){
-      kago.setTexture(res.basket3_png);
-    }
-    if(score > 300 && score < 400){
-      kago.setTexture(res.basket4_png);
-    }
+    //にゃんこのバスケットの中身
+    if(score01 < 5 && score02 < 1) kago.setTexture(res.basket1_png);
+    if(score01 > 5 && score02 < 1)kago.setTexture(res.basket2_png);
+    if(score02 > 0 && score02 < 2)kago.setTexture(res.basket3_png);
+    if(score02 > 2)kago.setTexture(res.basket4_png);
     //地面に落ちたアイテムは消去
     if (this.getPosition().y < -30) {
       gameLayer.removeItem(this)

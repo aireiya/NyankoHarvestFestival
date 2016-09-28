@@ -35,6 +35,8 @@ var res = {
   count02_png: "res/cat/number2.png",
   count01_png: "res/cat/number1.png",
   go_png: "res/cat/go.png",
+  kouyou_png: "res/kouyou.png",
+
 
 };
 
